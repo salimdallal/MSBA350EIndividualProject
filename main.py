@@ -39,7 +39,7 @@ imgside=Image.open('./Sidebar.jpg')
 st.sidebar.image(imgside, use_column_width=True)
 
 navigate = st.sidebar.radio('Navigation Side Bar',
-                 ('Home Page', 'Location based Dashboard', 'Gender based Dashboard', 'Recommendations'))
+                 ('Home Page', 'Location based Dashboard', 'Age based Dashboard', 'Recommendations'))
 
 
 # Updating the Datset if needed
@@ -76,13 +76,51 @@ if navigate == 'Home Page':
     
     # dashboard description
     st.header("Context")
-    st.markdown("""Heart failure is a common event caused by cardiovascular diseases. Cardiovascular diseases (CVDs) are the number one cause of death globally, taking an estimated 17.9 million lives each year, which accounts for 31% of all deaths worldwide. Four out of Five CVD deaths are due to heart failures, and one-third of these deaths occur prematurely in people under 70 years of age. 
-    People with cardiovascular disease or who are at high cardiovascular risk (due to the presence of one or more risk factors such as hypertension, diabetes, hyperlipidemia or already established disease) need early detection and management wherein a machine learning model can be of great help.
+    st.markdown("""The Global Burden of Disease is a comprehensive assessment of health conditions, risk factors, and causes of death across various populations and regions. By analyzing GBD data, we can gain insights into the prevailing health issues, disease prevalence, and the burden experienced by a specific population. In the case of Lebanon, understanding the GBD trends is crucial for recognizing the demand for healthcare services and planning for future needs especially with the new circumstances affecting the country. In recent years, Lebanon has succumbed to an economic crisis believed to the worst in recent history. This crisis to bound to affect all aspects of life and to have an enormous effect on the healthcare system. This is evident in the numerous articles and numbers indicating many problems stressing out the health care system. 
     """)
+    
+    st.markdown("""Two major issues are the exodus of heath care practitioners and the decrease in the availability of attainable medications. It is estimated that by January 2022 40 percent of health care professionals have left the country in search of better offers abroad. Many of these were specialized professionals serving specific diseases such as cancer, heart disease, and pediatrics just to name a few. Many of the private hospitals where these professionals worked had to shut down their departments. 
+    """)
+    
+    st.markdown("""As for medications, different difficulties have arisen. starting from the availability of these medications all the way to their extreme high prices and removal of subsidization. Due to the crisis and the lack of trust in banks and the inflexibility of laws regarding medication financing, medication suppliers are not able to import the needed medications even if the funds are available. Many of the medications are required to be subsidized by the government and cannot be imported otherwise. With the government going bankrupt, subsidization was at a halt and the critical mediation like Cancer medications were not available anymore. Eventually the Ministry of Public Health slowly started to allow import of such supplies without subsidization, however, this made them available only to the wealthy population since they are now extremely expensive
+    """)
+    
+    
     # dataset info
     st.header("Dataset Information")
-    st.markdown("""The dataset contains 11 features that can be used to predict a possible heart disease. It includes 12 variables describing 918 observations.
-                Data is collected and combined from Five heart datasets with 11 common features which makes this dataset large and reach enough for research and educational purposes.""")
+    st.markdown("""We have used data from the Global Burden of Disease section of the Institute for Health Metrics and Evaluation (IHME) website. The Data in its nature is mainly quantitative primary data. 
+
+Four measures are used:
+1.	Deaths
+2.	DALYs (Disability Adjusted Life Years)
+3.	YLDs (Years Lived with Disability) 
+4.	YLLs (Years of Life Lost)	
+
+Three Metrics:
+1.	Number
+2.	Percent
+3.	Rate (per 100,000 population)
+
+Locations used for comparison:
+1.	Lebanon
+2.	World Bank Low Income
+3.	World Bank Lower Middle Income
+4.	World Bank Upper Middle Income
+5.	World Bank High Income	
+
+Other Data available to use:
+Age groups: 0-14, 15-19, 20-54, and 55+
+Gender: Male, Female, and both
+Years: 2000 - 2019
+
+Data retrieved from the IHME website is already cleaned. It doesn’t have any empty or null values, and is mostly aggregated.
+We are using python with Streamlit, Pandas, and Altair packages to draw the graphs and charts. The aim is to compare the GBD of Lebanon with the GBD of the different income bounds as differentiated by the World bank. The main idea is to see what the effect in case Lebanon moves from one Location to another due to its economic crisis. We will see if there are differences among age groups and the sexes.
+
+Limitations to this approach are:
+•	Lebanon’s case is the first of its kind, as such factors governing the reporting of data, collection of data, and it’s accuracy may be the same as the location Lebanon belonged to pre-2019 crisis but may differ 
+•	Data gathered is up to the year 2019. It doesn’t cover the timespan of the crisis.
+•	There may be other indices that may be prevalent and need to be studied which are not included in this dataset.
+                """)
 
     
 # Creating the Dashboard Page
@@ -100,7 +138,7 @@ if navigate == 'Location based Dashboard':
     Metric = st.sidebar.selectbox(
         "Select the Metric",
         options=df["metric"].unique(),
-        index=0
+        index=2
         )
         
     
@@ -111,8 +149,8 @@ if navigate == 'Location based Dashboard':
         )
 
 
-    Gender = st.sidebar.multiselect(
-         "Select the Gender:",
+    Sex = st.sidebar.multiselect(
+         "Select the Sex:",
          options=df["sex"].unique(),
          default="Both"
          )
@@ -123,7 +161,7 @@ if navigate == 'Location based Dashboard':
   
     #st.dataframe(df_selection[["measure","location","sex","age","cause","rei","metric","year","val","upper","lower"]])
 
-    for x in Gender:
+    for x in Sex:
         
         df_selection = df.query(
             "location == @Location & sex == @x & measure == @Measure & metric == @Metric & age == 'All ages'"
@@ -133,13 +171,13 @@ if navigate == 'Location based Dashboard':
               x=alt.X('year:N'),
               y=alt.Y('val:Q'),
               color=alt.Color("location:N")
-            ).properties(title="Compare GBD by Locaion for " + x)
+            ).properties(title="Compare GBD " + Metric + " by Location for " + x)
         st.altair_chart(chart, use_container_width=True)
         
 
 
 # Creating the Dashboard Page
-if navigate == 'Gender based Dashboard':
+if navigate == 'Age based Dashboard':
     st.title(":bar_chart: Statistics")
     st.markdown("##")
     
@@ -152,12 +190,12 @@ if navigate == 'Gender based Dashboard':
     Metric = st.sidebar.selectbox(
         "Select the Metric",
         options=df["metric"].unique(),
-        index=1
+        index=2
         )
     
     
-    Gender = st.sidebar.multiselect(
-        "Select the Gender:",
+    Sex = st.sidebar.multiselect(
+        "Select the Sex:",
         options=df["sex"].unique(),
         default=["Male","Female"]
         )
@@ -177,14 +215,14 @@ if navigate == 'Gender based Dashboard':
     for x in AgeGroup:
         
         df_selection = df.query(
-            "sex == @Gender & measure == @Measure & metric == @Metric & age == @x"
+            "sex == @Sex & measure == @Measure & metric == @Metric & age == @x"
             )
         
         chart = alt.Chart(df_selection).mark_bar().encode(
               x=alt.X('year:N'),
               y=alt.Y('val:Q'),
               color=alt.Color("sex:N")
-            ).properties(title="Compare GBD by Sex for ages " + x)
+            ).properties(title="Compare GBD " + Metric + " by Sex for ages " + x)
         st.altair_chart(chart, use_container_width=True)
         
 ########################################################################################################################################################################
@@ -198,13 +236,10 @@ if navigate == 'Recommendations':
     
     
     # dashboard description
-    st.header("Context")
-    st.markdown("""Heart failure is a common event caused by cardiovascular diseases. Cardiovascular diseases (CVDs) are the number one cause of death globally, taking an estimated 17.9 million lives each year, which accounts for 31% of all deaths worldwide. Four out of Five CVD deaths are due to heart failures, and one-third of these deaths occur prematurely in people under 70 years of age. 
-    People with cardiovascular disease or who are at high cardiovascular risk (due to the presence of one or more risk factors such as hypertension, diabetes, hyperlipidemia or already established disease) need early detection and management wherein a machine learning model can be of great help.
-    """)
+    # st.header("Context")
+    st.markdown("""Form the dashboards above, if Lebanon moves to a lower income country category, the burden of disease will increase. It is highly recommended to increase the level of income to alleviate such risks. Other methods of alleviation may be present by changing the Healthcare system model to a Universal Model that is funded by the government or via External Grants in contrast to the current existing model where 80% of health institutions are Private and most people in Lebanon cannot afford them anymore.
+                """)
     # dataset info
-    st.header("Dataset Information")
-    st.markdown("""The dataset contains 11 features that can be used to predict a possible heart disease. It includes 12 variables describing 918 observations.
-                Data is collected and combined from Five heart datasets with 11 common features which makes this dataset large and reach enough for research and educational purposes.""")
+    st.markdown("""It is worth noting that the available data does not however provide a direct causality or even show similar situations since Lebanon’s crisis is not precedented at this scale. The data at hand does not present enough information on which age groups may be affected most with this crisis. It is recommended to acquire data post the year 2019 to better understand the impact of the ongoing economic crisis along with the Covid 19 pandemic and the port blast disaster.""")
 
     
